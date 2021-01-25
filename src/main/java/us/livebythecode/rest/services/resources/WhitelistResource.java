@@ -33,7 +33,7 @@ public class WhitelistResource {
 
     private List<TreeSet<String>> domainNameSetList = new ArrayList<>();
 
-    public void init(){
+    private void init(){
         try {
             for (int i = 0; i < whitelistCount; i++) {
                domainNameSetList.add(Sets.newTreeSet(Files.readAllLines(FileSystems.getDefault().getPath(configBasePath + "/whitelist"+(i+1)+".acl"), StandardCharsets.UTF_8)));
