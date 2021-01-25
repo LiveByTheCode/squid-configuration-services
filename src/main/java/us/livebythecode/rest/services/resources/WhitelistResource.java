@@ -47,12 +47,14 @@ public class WhitelistResource {
     @GET
     @Path("{listID}")
     public Set<String> list(@PathParam("listID") int listID) {
+        init();
         return domainNameSetList.get(listID);
     }
 
     @POST
     @Path("{listID}")
     public Set<String> add(@PathParam("listID") int listID, @QueryParam("domainName") String domainName) throws IOException, InterruptedException {
+        init();
         Set<String> updateSet = domainNameSetList.get(listID);
         if (isAlphaNumeric(domainName)) {
             updateSet.add(formatDomainName(domainName));
@@ -64,6 +66,7 @@ public class WhitelistResource {
     @DELETE
     @Path("{listID}")
     public Set<String> delete(@PathParam("listID") int listID, @QueryParam("domainName") String domainName) throws IOException, InterruptedException {
+        init();
         Set<String> updateSet = domainNameSetList.get(listID);
         updateSet.removeIf(existingDomainName -> existingDomainName.contentEquals(formatDomainName(domainName)));
         writeFile(listID, updateSet);
