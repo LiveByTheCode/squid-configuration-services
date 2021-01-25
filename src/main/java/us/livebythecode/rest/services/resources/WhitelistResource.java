@@ -1,6 +1,5 @@
 package us.livebythecode.rest.services.resources;
 
-import javax.annotation.PostConstruct;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 
@@ -61,7 +60,8 @@ public class WhitelistResource {
     public Set<String> delete(@PathParam("listID") int listID, @QueryParam("domainName") String domainName) throws IOException, InterruptedException {
         Set<String> updateSet = getDomainsNameSets().get(listID);
         updateSet.removeIf(existingDomainName -> existingDomainName.contentEquals(formatDomainName(domainName)));
-        writeFile(listID, updateSet);
+        int returnCode = writeFile(listID, updateSet);
+        //TODO: handle return code
         return updateSet;
     }
 
@@ -74,13 +74,12 @@ public class WhitelistResource {
     }
 
     private boolean isAlphaNumeric(String s) {
-        String pattern = "^[a-zA-Z0-9.]*$";
-        return s.matches(pattern);
+        return s.matches("^[a-zA-Z0-9.]*$");
     }
 
-    private void writeFile(int listID, Set<String> domainNameSet) throws IOException, InterruptedException {
+    private int writeFile(int listID, Set<String> domainNameSet) throws IOException, InterruptedException {
         Files.write(FileSystems.getDefault().getPath(configBasePath + "/whitelist"+(listID+1)+".acl"), domainNameSet);
-        reloadSquidConfig();
+        return reloadSquidConfig();
     }
     
     private int reloadSquidConfig() throws IOException, InterruptedException {
