@@ -33,7 +33,6 @@ public class WhitelistResource {
 
     private List<TreeSet<String>> domainNameSetList = new ArrayList<>();
 
-    @PostConstruct
     public void init(){
         try {
             for (int i = 0; i < whitelistCount; i++) {
