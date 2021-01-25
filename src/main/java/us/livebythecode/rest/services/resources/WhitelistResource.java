@@ -8,8 +8,6 @@ import com.google.common.collect.Sets;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
-import us.livebythecode.rest.services.StreamGobbler;
-
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystems;
@@ -18,7 +16,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.concurrent.Executors;
 
 @Path("/squid-configuration/whitelist-domains")
 @Produces(MediaType.APPLICATION_JSON)
@@ -40,7 +37,7 @@ public class WhitelistResource {
     public void init(){
         try {
             for (int i = 0; i < whitelistCount; i++) {
-                domainNameSetList.add(Sets.newTreeSet(Files.readAllLines(FileSystems.getDefault().getPath(configBasePath + "/whitelist"+(i+1)+".acl"), StandardCharsets.UTF_8)));
+               domainNameSetList.add(Sets.newTreeSet(Files.readAllLines(FileSystems.getDefault().getPath(configBasePath + "/whitelist"+(i+1)+".acl"), StandardCharsets.UTF_8)));
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -55,22 +52,18 @@ public class WhitelistResource {
 
     @POST
     @Path("{listID}")
-    public Set<String> add(@PathParam("listID") int listID, @QueryParam("domainName") String domainName) throws IOException,
-            InterruptedException {
+    public Set<String> add(@PathParam("listID") int listID, @QueryParam("domainName") String domainName) throws IOException, InterruptedException {
         Set<String> updateSet = domainNameSetList.get(listID);
         if (isAlphaNumeric(domainName)) {
             updateSet.add(formatDomainName(domainName));
             writeFile(listID, updateSet);
-        } else {
-            System.out.println("Not adding");
         }
         return updateSet;
     }
 
     @DELETE
     @Path("{listID}")
-    public Set<String> delete(@PathParam("listID") int listID, @QueryParam("domainName") String domainName) throws IOException,
-            InterruptedException {
+    public Set<String> delete(@PathParam("listID") int listID, @QueryParam("domainName") String domainName) throws IOException, InterruptedException {
         Set<String> updateSet = domainNameSetList.get(listID);
         updateSet.removeIf(existingDomainName -> existingDomainName.contentEquals(formatDomainName(domainName)));
         writeFile(listID, updateSet);
@@ -99,8 +92,6 @@ public class WhitelistResource {
         ProcessBuilder builder = new ProcessBuilder();
         builder.command("sh", "-c", squidReloadCommand);
         Process process = builder.start();
-        StreamGobbler streamGobbler = new StreamGobbler(process.getInputStream(), System.out::println);
-        Executors.newSingleThreadExecutor().submit(streamGobbler);
         return process.waitFor();
     }
 }

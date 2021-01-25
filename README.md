@@ -11,6 +11,11 @@ You can run your application in dev mode that enables live coding using:
 ./mvnw compile quarkus:dev
 ```
 
+## Swagger UI
+
+Available at http://localhost:8080/q/swagger-ui/
+
+
 ## Packaging and running the application
 
 The application can be packaged using:
@@ -43,9 +48,9 @@ You can then execute your native executable with: `./target/squid-configuration-
 
 If you want to learn more about building native executables, please consult https://quarkus.io/guides/maven-tooling.html.
 
-# RESTEasy JSON serialisation using Jackson
-
-<p>This example demonstrate RESTEasy JSON serialisation by letting you list, add and remove quark types from a list.</p>
-<p><b>Quarked!</b></p>
-
-Guide: https://quarkus.io/guides/rest-json
+## Other notes:
+A file will need to be added to /etc/sudoers.d. Name it squid and insert a single line like:  
+```
+%squid ALL=NOPASSWD: /usr/bin/systemctl reload squid.service
+```
+This will allow the squid user to reload the squid service after the configuration has changed.
