@@ -31,30 +31,24 @@ public class WhitelistResource {
     @ConfigProperty(name = "squid.reloadcommand")
     String squidReloadCommand;
 
-    private List<TreeSet<String>> domainNameSetList = new ArrayList<>();
-
-    private void init(){
-        try {
-            for (int i = 0; i < whitelistCount; i++) {
-               domainNameSetList.add(Sets.newTreeSet(Files.readAllLines(FileSystems.getDefault().getPath(configBasePath + "/whitelist"+(i+1)+".acl"), StandardCharsets.UTF_8)));
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
+    private List<TreeSet<String>> getDomainsNameSets() throws IOException {
+        List<TreeSet<String>> domainNameSetList = new ArrayList<>();
+        for (int i = 0; i < whitelistCount; i++) {
+            domainNameSetList.add(Sets.newTreeSet(Files.readAllLines(FileSystems.getDefault().getPath(configBasePath + "/whitelist"+(i+1)+".acl"), StandardCharsets.UTF_8)));
         }
+        return domainNameSetList;
     }
 
     @GET
     @Path("{listID}")
-    public Set<String> list(@PathParam("listID") int listID) {
-        init();
-        return domainNameSetList.get(listID);
+    public Set<String> list(@PathParam("listID") int listID) throws IOException {
+        return getDomainsNameSets().get(listID);
     }
 
     @POST
     @Path("{listID}")
     public Set<String> add(@PathParam("listID") int listID, @QueryParam("domainName") String domainName) throws IOException, InterruptedException {
-        init();
-        Set<String> updateSet = domainNameSetList.get(listID);
+        Set<String> updateSet = getDomainsNameSets().get(listID);
         if (isAlphaNumeric(domainName)) {
             updateSet.add(formatDomainName(domainName));
             writeFile(listID, updateSet);
@@ -65,8 +59,7 @@ public class WhitelistResource {
     @DELETE
     @Path("{listID}")
     public Set<String> delete(@PathParam("listID") int listID, @QueryParam("domainName") String domainName) throws IOException, InterruptedException {
-        init();
-        Set<String> updateSet = domainNameSetList.get(listID);
+        Set<String> updateSet = getDomainsNameSets().get(listID);
         updateSet.removeIf(existingDomainName -> existingDomainName.contentEquals(formatDomainName(domainName)));
         writeFile(listID, updateSet);
         return updateSet;
