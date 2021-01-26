@@ -9,6 +9,7 @@ import us.livebythecode.rest.model.ScheduledBypassReset;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,6 +38,8 @@ public class ScheduleBypassResource {
     @ConfigProperty(name = "squid.reloadcommand")
     String squidReloadCommand;
 
+    //String testProxyCommand = "curl --proxy http://localhost:3128 ifconfig.me";
+
     @GET
     public List<ScheduledBypassReset> list() {
         return executeSystemCommand(atqCommand).stream().map(ScheduledBypassReset::new).collect(Collectors.toList());
@@ -44,7 +47,7 @@ public class ScheduleBypassResource {
 
     @POST
     public boolean add(@QueryParam("minutes") String minutes) {
-        delete();
+        delete(); //clean up any existing bypasses  
         executeSystemCommand(atCommand+" -f "+disableBypassCommand+" now + "+minutes+" minutes");
         executeSystemCommand(enableBypassCommand);
         return true;
@@ -62,16 +65,18 @@ public class ScheduleBypassResource {
         List<String> outputStrings = new ArrayList<>();
         ProcessBuilder builder = new ProcessBuilder();
         builder.command("sh", "-c", command);
-       try {
-            Process process = builder.start();
-            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-            String line = null;
-            while ( (line = reader.readLine()) != null) {
-                    outputStrings.add(line);
-            }
+        try {
+            outputStrings = readOutput(builder.start().getInputStream());
         } catch (IOException e) {
             e.printStackTrace();
         }
-       return outputStrings;
+        return outputStrings;
     }
+
+    private List<String> readOutput(InputStream inputStream) throws IOException {
+        try (BufferedReader output = new BufferedReader(new InputStreamReader(inputStream))) {
+            return output.lines().collect(Collectors.toList());
+        }
+    }
+
 }
