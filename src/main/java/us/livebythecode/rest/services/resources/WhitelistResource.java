@@ -1,5 +1,7 @@
 package us.livebythecode.rest.services.resources;
 
+import javax.annotation.security.PermitAll;
+import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 
