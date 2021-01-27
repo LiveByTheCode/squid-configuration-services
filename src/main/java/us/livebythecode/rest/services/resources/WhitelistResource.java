@@ -2,12 +2,18 @@ package us.livebythecode.rest.services.resources;
 
 import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
+import javax.enterprise.context.RequestScoped;
+import javax.inject.Inject;
 import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.SecurityContext;
 
 import com.google.common.collect.Sets;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.eclipse.microprofile.jwt.JsonWebToken;
+import org.jboss.logging.Logger;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -21,7 +27,11 @@ import java.util.TreeSet;
 @Path("/squid-configuration/whitelist-domains")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
+@RequestScoped
 public class WhitelistResource {
+
+    @Inject
+    JsonWebToken jwt; 
 
     @ConfigProperty(name = "squid.configuration.whitelistcount")
     int whitelistCount;
@@ -31,6 +41,8 @@ public class WhitelistResource {
 
     @ConfigProperty(name = "squid.reloadcommand")
     String squidReloadCommand;
+
+    private static final Logger LOG = Logger.getLogger(WhitelistResource.class);
 
     private List<TreeSet<String>> getDomainsNameSets() throws IOException {
         List<TreeSet<String>> domainNameSetList = new ArrayList<>();
@@ -42,14 +54,17 @@ public class WhitelistResource {
 
     @GET
     @Path("{listID}")
-    public Set<String> list(@PathParam("listID") int listID) throws IOException {
+    @PermitAll
+    public Set<String> list(@PathParam("listID") int listID, @Context SecurityContext ctx) throws IOException {
         return getDomainsNameSets().get(listID);
     }
-
+    
     @POST
     @Path("{listID}")
+    @RolesAllowed({"Admin"})
     public Set<String> add(@PathParam("listID") int listID, @QueryParam("domainName") String domainName) throws IOException, InterruptedException {
         Set<String> updateSet = getDomainsNameSets().get(listID);
+        LOG.info("Adding "+domainName+" to whitelist "+listID);
         if (isAlphaNumeric(domainName)) {
             updateSet.add(formatDomainName(domainName));
             writeFile(listID, updateSet);
@@ -59,8 +74,10 @@ public class WhitelistResource {
 
     @DELETE
     @Path("{listID}")
+    @RolesAllowed({"Admin"})
     public Set<String> delete(@PathParam("listID") int listID, @QueryParam("domainName") String domainName) throws IOException, InterruptedException {
         Set<String> updateSet = getDomainsNameSets().get(listID);
+        LOG.info("Deleting "+domainName+" from whitelist "+listID);
         updateSet.removeIf(existingDomainName -> existingDomainName.contentEquals(formatDomainName(domainName)));
         int returnCode = writeFile(listID, updateSet);
         //TODO: handle return code

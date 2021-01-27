@@ -1,9 +1,11 @@
 package us.livebythecode.rest.services.resources;
 
+import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.jboss.logging.Logger;
 
 import us.livebythecode.rest.model.ScheduledBypassReset;
 
@@ -38,6 +40,8 @@ public class ScheduleBypassResource {
     @ConfigProperty(name = "squid.reloadcommand")
     String squidReloadCommand;
 
+    private static final Logger LOG = Logger.getLogger(ScheduleBypassResource.class);
+
     //String testProxyCommand = "curl --proxy http://localhost:3128 ifconfig.me";
 
     @GET
@@ -46,7 +50,9 @@ public class ScheduleBypassResource {
     }
 
     @POST
+    @RolesAllowed({"Admin"})
     public boolean add(@QueryParam("minutes") String minutes) {
+        LOG.info("Adding "+minutes+" minute whitelist bypass.");
         delete(); //clean up any existing bypasses  
         executeSystemCommand(atCommand+" -f "+disableBypassCommand+" now + "+minutes+" minutes");
         executeSystemCommand(enableBypassCommand);
@@ -54,7 +60,9 @@ public class ScheduleBypassResource {
     }
 
     @DELETE
+    @RolesAllowed({"Admin"})
     public boolean delete() {
+        LOG.info("Deleting whitelist bypass.");
         executeSystemCommand(disableBypassCommand);
         list().stream().forEach(bypass -> executeSystemCommand(atrmCommand + " " + bypass.getId()));
         return true;
@@ -68,7 +76,7 @@ public class ScheduleBypassResource {
         try {
             outputStrings = readOutput(builder.start().getInputStream());
         } catch (IOException e) {
-            e.printStackTrace();
+            LOG.error("System command execution failed for: "+command, e);
         }
         return outputStrings;
     }

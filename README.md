@@ -12,10 +12,27 @@ You can run your application in dev mode that enables live coding using:
 ```shell script
 ./mvnw compile quarkus:dev
 ```
+Note that the most endpoints are secured by JWT. To get the token to be used for subsequent calls, first make a request to:
+http://{{hostname}}:{{portnumber}}//squid-configuration/authenticate?user=admin&password=somepass  
+Then use that token for subsequent calls.
 
 ## Swagger UI
 
 Available at http://localhost:8080/q/swagger-ui/
+
+## Postman 
+
+[![Run in Postman](https://run.pstmn.io/button.svg)](https://app.getpostman.com/run-collection/f7adb836f4ec7a0d0345)
+
+## Generating asymetric keys (using openssl)
+
+openssl genrsa -out rsaPrivateKey.pem 2048
+openssl rsa -pubout -in rsaPrivateKey.pem -out publicKey.pem
+
+openssl command for converting the private key to PKCS#8 format:
+
+openssl pkcs8 -topk8 -nocrypt -inform pem -in rsaPrivateKey.pem -outform pem -out privateKey.pem
+
 
 
 ## Packaging and running the application
