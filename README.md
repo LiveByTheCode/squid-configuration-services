@@ -60,6 +60,20 @@ Example API calls are provided in [Postman](https://www.postman.com/) collection
 
 [![Run in Postman](https://run.pstmn.io/button.svg)](https://app.getpostman.com/run-collection/f7adb836f4ec7a0d0345)
 
+
+# Curl
+
+You really like using the command line huh? OK...  
+You should be able to retrieve a token using:  
+```bash
+curl -i -H "Accept: application/json" -H "Content-Type: application/json" -X POST "http://localhost:8080/squid-configuration/authenticate?user=admin&password=somepass"
+```
+Then paste the token from the command above into the command below to add 1reallygreatdomain.com to the whitelist.
+
+```bash
+curl -i -H "Accept: application/json" -H "Content-Type: application/json" -X POST -H "Authorization: Bearer eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsImdyb3VwcyI6WyJBZG1pbiJdLCJpYXQiOjE2MTE3NzkzNDMsImV4cCI6MTYxMTc4MTE0M30.nZrRAlvT8wzEJpnMxqFBVbI1M1P7-p4QfKLJO-Xbp_k6si6LFMRKcpippx1ywahBw-zyENUKX1CUWCiQDBNoGYVDkOdw9gVt9S_dqCGHGevaND-AcAnTWVubFjYX0EaIfnafgNz_nuVJQXJX_eMQutXPFb6ddfrxgnB8aAp4Aes13J3k2T07WRFulvMGfsyhdgOfzpg_2t3uL-EuVGWUVO4xpq8qm2iwop943-QR3URyChkP-8qJAKdDGbiAHBScYLrKDN9-Y_Y4xSA781OiNMcoRUofhc9gq6yMwbhfBzyVgqUzL-sBnoPaRjtrtlUFPAS5FDz2j6SsKunzZZcWdQ" "http://localhost:8080/squid-configuration/whitelist-domains/0?domainName=1reallygreatdomain.com"
+```
+
 # Generating asymetric keys (using openssl)
 
 (Note that the public and private keys are configured in [application.properties](./src/main/resources/application.properties))
