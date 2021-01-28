@@ -4,7 +4,7 @@ This project uses Quarkus, the Supersonic Subatomic Java Framework.
 
 If you want to learn more about Quarkus, please visit its website: https://quarkus.io/.
 
-The goal of this project is to build an API to facilitate the daily administration of a Squid proxy server in whitelist only mode.
+The goal of this project is to create an API to facilitate the daily administration of a Squid proxy server in whitelist only mode.
 
 Currently this API is comprised of two basic features.  
 1. Add or delete domains from the whitelist (and prompt Squid to reload the configuration).
@@ -40,7 +40,7 @@ Currently this API is comprised of two basic features.
 
 # Running the application in dev mode
 
-Note that the application (by default) expects 2 whitelist files (`/etc/squid/whitelist1.acl` and `/etc/squid/whitelist2`).acl  
+Note that the application (by default) expects 2 whitelist files (`/etc/squid/whitelist1.acl` and `/etc/squid/whitelist2.acl`)  
 
 You can run the application in dev mode that enables live coding using:
 ```shell script
@@ -56,7 +56,7 @@ Available at http://localhost:8080/q/swagger-ui/
 
 # Postman 
 
-Example API calls are provided in [Postman](https://www.postman.com/) collection below.
+Example API calls are provided in the [Postman](https://www.postman.com/) collection below.
 
 [![Run in Postman](https://run.pstmn.io/button.svg)](https://app.getpostman.com/run-collection/f7adb836f4ec7a0d0345)
 
@@ -71,10 +71,10 @@ curl -i -H "Accept: application/json" -H "Content-Type: application/json" -X POS
 Then paste the token from the command above into the command below to add 1reallygreatdomain.com to the whitelist.
 
 ```bash
-curl -i -H "Accept: application/json" -H "Content-Type: application/json" -X POST -H "Authorization: Bearer eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsImdyb3VwcyI6WyJBZG1pbiJdLCJpYXQiOjE2MTE3NzkzNDMsImV4cCI6MTYxMTc4MTE0M30.nZrRAlvT8wzEJpnMxqFBVbI1M1P7-p4QfKLJO-Xbp_k6si6LFMRKcpippx1ywahBw-zyENUKX1CUWCiQDBNoGYVDkOdw9gVt9S_dqCGHGevaND-AcAnTWVubFjYX0EaIfnafgNz_nuVJQXJX_eMQutXPFb6ddfrxgnB8aAp4Aes13J3k2T07WRFulvMGfsyhdgOfzpg_2t3uL-EuVGWUVO4xpq8qm2iwop943-QR3URyChkP-8qJAKdDGbiAHBScYLrKDN9-Y_Y4xSA781OiNMcoRUofhc9gq6yMwbhfBzyVgqUzL-sBnoPaRjtrtlUFPAS5FDz2j6SsKunzZZcWdQ" "http://localhost:8080/squid-configuration/whitelist-domains/0?domainName=1reallygreatdomain.com"
+curl -i -H "Accept: application/json" -H "Content-Type: application/json" -X POST -H "Authorization: Bearer <your_token_goes_here>" "http://localhost:8080/squid-configuration/whitelist-domains/0?domainName=1reallygreatdomain.com"
 ```
 
-# Generating asymetric keys (using openssl)
+# Generating asymmetric keys (using openssl)
 
 (Note that the public and private keys are configured in [application.properties](./src/main/resources/application.properties))
 
@@ -109,14 +109,17 @@ The application is now runnable using `java -jar target/squid-configuration-serv
 
 # Creating a native executable
 
+Out of the box, native executable creation fails to build a usable executable for this application due to some missed dependencies. To resolve this problem, the jar needs to be run once with Graalvm using the native image agent to generate native image configuration files.  
+
+This can be accomplished by running the following command from the project directory, then exercising the application. This allows Graalvm to more accurately determine which classes should be included in the native executable and update the configuration files accordingly. For simplicity I've gone ahead and included the configuration files [here](src/main/resources/META-INF/native-image).
+
+```
+java -agentlib:native-image-agent=config-output-dir=./src/main/resources/META-INF/native-image -jar ./target/squid-configuration-services-1.0.0-SNAPSHOT-runner.jar
+```
+
 You can create a native executable using: 
 ```shell script
 ./mvn package -Pnative
-```
-
-Or, if you don't have GraalVM installed, you can run the native executable build in a container using: 
-```shell script
-./mvn package -Pnative -Dquarkus.native.container-build=true
 ```
 
 You can then execute your native executable with: `./target/squid-configuration-services-1.0.0-SNAPSHOT-runner`
@@ -130,7 +133,7 @@ A file will need to be added to /etc/sudoers.d. Name it squid (assuming you will
 ```
 This will allow the squid user to reload the squid service after the configuration has changed.
 
-There are 2 shell scripts for [enabling](./scripts/enable_bypass.sh) and [disabling](./scripts/disable_bypass.sh) whitelist bypass mode. These will need to be copied somewhere on your host and made executable. Additionally [application.properties](./src/main/resources/application.properties) will need to be updated to reflect the script paths.
+There are 2 shell scripts for [enabling](./scripts/enable_bypass.sh) and [disabling](./scripts/disable_bypass.sh) whitelist bypass mode. These (or something analogous to them) will need to be copied somewhere on your host and made executable. Additionally [application.properties](./src/main/resources/application.properties) will need to be updated to reflect the script paths.
 
-# UI
+# UI (because who wants to drag out curl every day)
 [Whitelist Manager](https://github.com/SimpleGeek/whitelist-manager) Is project that's currently in the works to provide a UI over this API.
