@@ -136,4 +136,4 @@ This will allow the squid user to reload the squid service after the configurati
 There are 2 shell scripts for [enabling](./scripts/enable_bypass.sh) and [disabling](./scripts/disable_bypass.sh) whitelist bypass mode. These (or something analogous to them) will need to be copied somewhere on your host and made executable. Additionally [application.properties](./src/main/resources/application.properties) will need to be updated to reflect the script paths.
 
 # UI (because who wants to drag out curl every day)
-[Whitelist Manager](https://github.com/SimpleGeek/whitelist-manager) Is project that's currently in the works to provide a UI over this API.
+[Squid Config UI](https://github.com/SimpleGeek/squid-config-ui) is project that's currently in the works to provide a UI over this API.
